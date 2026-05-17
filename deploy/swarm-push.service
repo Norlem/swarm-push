@@ -1,0 +1,20 @@
+[Unit]
+Description=Swarm Push Notification Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=fleet
+WorkingDirectory=/opt/swarm-push
+EnvironmentFile=/etc/swarm-push.env
+ExecStart=/usr/bin/node /opt/swarm-push/dist/index.js
+Restart=always
+RestartSec=5
+TimeoutStopSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=swarm-push
+
+[Install]
+WantedBy=multi-user.target
