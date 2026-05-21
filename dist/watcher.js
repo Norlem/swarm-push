@@ -7,6 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.startWatcher = startWatcher;
 const config_1 = require("./config");
 const notifier_1 = require("./notifier");
+const operatorAlerts_1 = require("./operatorAlerts");
 const RELAY_SSE_URL = `${config_1.config.relayUrl}/api/events`;
 const PREVIEW_MAX = 120;
 function sleep(ms) {
@@ -84,7 +85,7 @@ async function consumeStream() {
                 if (msg.event === 'agent_heartbeat' || msg.type === 'agent_heartbeat')
                     continue;
                 if (isOperatorMessage(msg)) {
-                    const payload = buildPayload(msg);
+                    const payload = (0, operatorAlerts_1.tryBuildOperatorAlertPayload)(msg) ?? buildPayload(msg);
                     console.log(`[watcher] → push: "${payload.title}" | "${payload.body}"`);
                     void (0, notifier_1.sendPushToAll)(payload);
                 }

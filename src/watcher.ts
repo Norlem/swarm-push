@@ -5,6 +5,7 @@
 
 import { config } from './config';
 import { sendPushToAll } from './notifier';
+import { tryBuildOperatorAlertPayload } from './operatorAlerts';
 
 const RELAY_SSE_URL = `${config.relayUrl}/api/events`;
 const PREVIEW_MAX = 120;
@@ -84,7 +85,8 @@ async function consumeStream(): Promise<void> {
         if (!msg) continue;
         if (msg.event === 'agent_heartbeat' || msg.type === 'agent_heartbeat') continue;
         if (isOperatorMessage(msg)) {
-          const payload = buildPayload(msg);
+          const payload =
+            tryBuildOperatorAlertPayload(msg) ?? buildPayload(msg);
           console.log(`[watcher] → push: "${payload.title}" | "${payload.body}"`);
           void sendPushToAll(payload);
         }
