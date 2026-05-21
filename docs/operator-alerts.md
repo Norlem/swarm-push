@@ -5,7 +5,38 @@ notifications when messages are addressed to the operator (`session-primary` by
 default). Lifecycle alerts use a dedicated envelope so they are not confused with
 agent coordination mail.
 
-## Envelope
+## Accepted Envelopes
+
+swarm-push accepts both relay shapes currently in use:
+
+1. **Producer channel envelope** — deployed producers such as `agent-relay`
+   write messages on `channel: "operator-alerts"` and JSON-encode the alert
+   fields inside `body`.
+2. **Simulation/direct envelope** — manual scripts can POST an already-expanded
+   relay message with top-level `event: "operator_alert"` and `alert_category`.
+
+### Producer channel envelope
+
+POST `https://relay.swarm.bdev.norlem.com/api/messages` with the producer's
+`X-Agent-Key`:
+
+```json
+{
+  "to": "session-primary",
+  "channel": "operator-alerts",
+  "body": "{\"category\":\"cookie_auth_blocked\",\"agent_id\":\"codex-1234\",\"endpoint\":\"/api/agents/history\"}"
+}
+```
+
+`body` must parse as a JSON object. `category` is treated as the alert category;
+category-specific fields such as `agent_id`, `endpoint`, `expires_at`, `status`,
+and `latency_ms` are read from that parsed body object.
+
+For a real cookie-gate trigger path, use `/api/agents/history`; `/api/dashboard`
+can be redirected at the CloudFront edge before it reaches relay, so it is not a
+canonical trigger path.
+
+### Simulation/direct envelope
 
 POST `https://relay.swarm.bdev.norlem.com/api/messages` with the producer's
 `X-Agent-Key`:
@@ -20,7 +51,9 @@ POST `https://relay.swarm.bdev.norlem.com/api/messages` with the producer's
 }
 ```
 
-`event` must be `operator_alert`. `alert_category` is one of:
+For this direct shape, `event` must be `operator_alert`.
+
+For both shapes, the alert category is one of:
 
 | Category | Producer (intended) | Required fields |
 |----------|---------------------|-----------------|
