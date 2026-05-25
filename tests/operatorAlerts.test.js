@@ -43,3 +43,25 @@ test('builds categorized payloads from producer operator-alerts channel envelope
     url: 'https://console.test/agents/codex-1234',
   });
 });
+
+test('builds credential_request payloads with mediation deep-link', () => {
+  const payload = tryBuildOperatorAlertPayload({
+    to: 'operator',
+    channel: 'operator-alerts',
+    body: JSON.stringify({
+      category: 'credential_request',
+      agent_id: 'flee-c3497',
+      scope: 'aegis-console',
+      reason: 'need fresh operator-mediated cookie',
+      credential_request_id: '11111111-2222-3333-4444-555555555555',
+      mediation_path: '/mediation?credential_request_id=11111111-2222-3333-4444-555555555555',
+    }),
+  });
+
+  assert.deepEqual(payload, {
+    title: 'Credential request',
+    body: 'flee-c3497 needs aegis-console: need fresh operator-mediated cookie',
+    url:
+      'https://console.test/mediation?credential_request_id=11111111-2222-3333-4444-555555555555',
+  });
+});

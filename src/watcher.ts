@@ -6,6 +6,7 @@
 import { config } from './config';
 import { sendPushToAll } from './notifier';
 import { tryBuildOperatorAlertPayload } from './operatorAlerts';
+import { isOperatorMessage } from './operatorRouting';
 
 const RELAY_SSE_URL = `${config.relayUrl}/api/events`;
 const PREVIEW_MAX = 120;
@@ -36,11 +37,6 @@ function parseMessage(data: string): Record<string, unknown> | null {
     }
   } catch { /* ignore */ }
   return null;
-}
-
-function isOperatorMessage(msg: Record<string, unknown>): boolean {
-  const to = String(msg.to_agent_id ?? msg.to ?? '');
-  return to === config.operatorId || to === 'primary';
 }
 
 function buildPayload(msg: Record<string, unknown>) {
