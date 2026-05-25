@@ -15,6 +15,7 @@ export const ALERT_CATEGORIES = [
   'cookie_auth_blocked',
   'cookie_refreshed',
   'canary_failed',
+  'credential_request',
 ] as const;
 
 export type AlertCategory = (typeof ALERT_CATEGORIES)[number];
@@ -148,6 +149,22 @@ export function tryBuildOperatorAlertPayload(
         title: 'Budget canary FAILED',
         body: `Canary FAILED: ${status}${latency}. Check budget providers in Console.`,
         url: consoleUrl('/budget'),
+      };
+    }
+    case 'credential_request': {
+      const agent = String(
+        alertMsg.agent_id ?? alertMsg.from_agent_id ?? alertMsg.from_instance_name ?? 'agent',
+      );
+      const scope = String(alertMsg.scope ?? alertMsg.credential_type ?? 'credentials');
+      const reason = String(alertMsg.reason ?? '').slice(0, 100);
+      const mediationPath = String(
+        alertMsg.mediation_path ?? '/mediation',
+      );
+      const reasonSuffix = reason ? `: ${reason}` : '';
+      return {
+        title: 'Credential request',
+        body: `${agent} needs ${scope}${reasonSuffix}`,
+        url: consoleUrl(mediationPath),
       };
     }
     default:
